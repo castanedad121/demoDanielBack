@@ -1,7 +1,7 @@
 const https = require("https");
 
 const generateToken = (req, res) => {
-  const { requestSource, merchantCode, orderNumber, publicKey, amount } =
+  const { requestSource, merchantCode, orderNumber, publicKey, amount, environment } =
     req.body;
   const transactionId = String(
     req.headers.transactionid || req.headers.TransactionId
@@ -22,7 +22,8 @@ const generateToken = (req, res) => {
     !merchantCode ||
     !orderNumber ||
     !publicKey ||
-    !amount
+    !amount ||
+    !environment
   ) {
     return res.status(400).json({
       code: "400",
@@ -40,9 +41,13 @@ const generateToken = (req, res) => {
 
   console.log("🔹 Body enviado a Izipay:", requestBody);
 
+  const apiHostname = environment === "production" 
+    ? "api-pw.izipay.pe" 
+    : "sandbox-api-pw.izipay.pe";
+
   const options = {
     method: "POST",
-    hostname: "sandbox-api-pw.izipay.pe",
+    hostname: apiHostname,
     path: "/security/v1/Token/Generate",
     headers: {
       transactionId: transactionId, // Versión en minúsculas
